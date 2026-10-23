@@ -2,29 +2,19 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import {
-  Bot,
-  Cpu,
-  Fingerprint,
-  KeyRound,
-  Network,
-  Puzzle,
-  ScrollText,
-  ShieldCheck,
-  type LucideIcon,
-} from "lucide-react"
+import { Bot, Cpu, Network, Radio, Shield, UserCheck, type LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-// Mesh coordinates use a 500 x 400 viewBox (5:4). Node positions are percentages of the
-// canvas, so a node at (x, y) percent sits at (x * 5, y * 4) in viewBox units.
+// Beacon canvas uses a 500 x 400 viewBox (5:4). Node positions are percentages of the canvas,
+// so a node at (x, y) percent sits at (x * 5, y * 4) in viewBox units.
 const VIEWBOX_WIDTH = 500
 const VIEWBOX_HEIGHT = 400
 
-// The background network uses its own wider viewBox. "slice" crops it instead of stretching it.
+// The background grid uses its own wider viewBox. "slice" crops it instead of stretching it.
 const BG_WIDTH = 1200
 const BG_HEIGHT = 800
 
-interface MeshNode {
+interface BeaconNode {
   id: string
   kind: string
   title: string
@@ -35,28 +25,27 @@ interface MeshNode {
   y: number
 }
 
-// Entities that talk to each other directly, with no server in between.
-const NODES: MeshNode[] = [
-  { id: "sovereign", kind: "Entity / Sovereign", title: "Sovereign DID", meta: "did:meso:7f3a...c91e", icon: Fingerprint, x: 20, y: 28 },
-  { id: "device", kind: "Entity / Hardware", title: "Local Hardware / ESP32", meta: "Offline-first · signed", icon: Cpu, x: 40, y: 72 },
-  { id: "agent", kind: "Entity / AI", title: "AI Agent", meta: "Runs on-device", icon: Bot, x: 60, y: 28 },
-  { id: "plugin", kind: "Service / Anonymous", title: "Anonymous Service Plugin", meta: "No account required", icon: Puzzle, x: 80, y: 72 },
+// Three peers that broadcast to each other directly. There is no hub in the middle.
+const NODES: BeaconNode[] = [
+  { id: "human", kind: "Identity / Passkey", title: "Human Identity / Passkey", meta: "did:meso:7f3a...c91e", icon: UserCheck, x: 22, y: 30 },
+  { id: "appliance", kind: "Hardware / IoT", title: "Smart Appliance / ESP32", meta: "Signed · offline-first", icon: Cpu, x: 78, y: 30 },
+  { id: "agent", kind: "Entity / AI", title: "Local AI Agent", meta: "Holds its own key", icon: Bot, x: 50, y: 74 },
 ]
 
-// Every link in the mesh uses the same <===> protocol-level bond.
-const LINK_LABEL = "<===>"
+// Every signal carries the same peer-to-peer label.
+const SIGNAL_LABEL = "P2P · SIGNED"
 
-interface MeshLink {
+interface BeaconLink {
   from: string
   to: string
-  // Vertical offset of the curve's control point. Alternating signs give the mesh a wave.
+  // Vertical offset of the curve's control point. A negative value arcs the link upward.
   bend: number
 }
 
-const LINKS: MeshLink[] = [
-  { from: "sovereign", to: "device", bend: 30 },
-  { from: "device", to: "agent", bend: -30 },
-  { from: "agent", to: "plugin", bend: 30 },
+const LINKS: BeaconLink[] = [
+  { from: "human", to: "appliance", bend: -40 },
+  { from: "appliance", to: "agent", bend: 0 },
+  { from: "agent", to: "human", bend: 0 },
 ]
 
 // Decorative nodes that give the canvas an organic, unfinished feel.
@@ -64,7 +53,7 @@ const AMBIENT_DOTS = [
   { x: 8, y: 14 },
   { x: 92, y: 12 },
   { x: 10, y: 86 },
-  { x: 50, y: 6 },
+  { x: 50, y: 8 },
   { x: 96, y: 50 },
 ]
 
@@ -80,7 +69,7 @@ const BG_EDGES: [number, number][] = [
   [2, 8], [4, 9], [10, 15], [8, 17], [0, 12], [13, 11],
 ]
 
-// Turns each link into a quadratic curve and finds the curve's midpoint for its label.
+// Turns each link into a quadratic curve and places its label at the curve's midpoint.
 function resolveLinks() {
   const byId = new Map(NODES.map((node) => [node.id, node]))
 
@@ -149,7 +138,7 @@ function BackgroundNetwork() {
 }
 
 export function Hero() {
-  // Hover previews an entity's links. A click pins the selection until it is clicked again.
+  // Hover previews a peer's signals. A click pins the selection until it is clicked again.
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [pinnedId, setPinnedId] = useState<string | null>(null)
   const focusId = pinnedId ?? hoveredId
@@ -159,7 +148,7 @@ export function Hero() {
     <section className="relative isolate overflow-hidden bg-slate-950 py-24 text-slate-100 md:py-32">
       <BackgroundNetwork />
 
-      {/* Minimal cryptography grid, masked so it fades toward the edges. */}
+      {/* Cryptographic signal grid, masked so it fades toward the edges. */}
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(to_right,rgba(148,163,184,0.07)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.07)_1px,transparent_1px)] [background-size:64px_64px] [mask-image:radial-gradient(ellipse_at_center,black_25%,transparent_75%)]" />
 
       {/* Organic glows: a soft emerald pool and a warm amber haze, with no blue gradients. */}
@@ -167,35 +156,35 @@ export function Hero() {
       <div className="pointer-events-none absolute -right-32 bottom-0 -z-10 h-[26rem] w-[26rem] rounded-full bg-amber-200/5 blur-3xl" />
 
       <div className="mx-auto grid max-w-7xl items-center gap-16 px-6 lg:grid-cols-2">
-        {/* Left column: manifesto headline, subheadline, and actions. */}
+        {/* Left column: headline, manifesto copy, and actions. */}
         <div className="flex flex-col items-start gap-8">
           <h1 className="font-serif text-5xl leading-[1.05] tracking-tight text-slate-100 sm:text-6xl lg:text-7xl">
             <span className="block">You are not an account.</span>
             {/* Glowing gradient accent. The drop shadow traces the text shape. */}
             <span className="mt-2 block italic bg-linear-to-r from-emerald-200 via-amber-100 to-emerald-300 bg-clip-text text-transparent drop-shadow-[0_0_28px_rgba(52,211,153,0.35)]">
-              You are an identity. Define yourself.
+              You are a sovereign identity.
             </span>
           </h1>
 
           <p className="max-w-xl text-base leading-relaxed text-slate-400 sm:text-lg">
-            Step out of corporate clouds and walled gardens. meso.land is a permissionless protocol
-            where humans, hardware, and AIs interact as sovereign, anonymous entities—without servers,
-            without passwords, without middleman.
+            Just like an AirTag establishes physical presence without central servers, meso.land gives
+            humans, hardware, and AIs an unforgeable, self-owned cryptographic key to interact across the
+            web and physical world directly.
           </p>
 
           <div className="flex w-full flex-col gap-4 sm:w-auto sm:flex-row">
-            {/* Primary action. Placeholder link to the demo until the ID flow exists. */}
+            {/* Primary action. Placeholder link to the demo until the broadcast flow exists. */}
             <Button
               size="lg"
               nativeButton={false}
               render={<Link href="#demo" />}
               className="h-12 gap-2 rounded-md bg-emerald-400 px-6 text-base font-medium text-slate-950 hover:bg-emerald-300"
             >
-              <KeyRound className="h-4 w-4" />
-              Generate Sovereign ID
+              <Radio className="h-4 w-4" />
+              Broadcast Your Identity
             </Button>
 
-            {/* Secondary action: jumps to the features section, which carries the manifesto. */}
+            {/* Secondary action: jumps to the features section. */}
             <Button
               size="lg"
               variant="outline"
@@ -203,22 +192,22 @@ export function Hero() {
               render={<Link href="#features" />}
               className="h-12 gap-2 rounded-md border-slate-700 bg-transparent px-6 text-base font-medium text-slate-100 hover:bg-slate-800/60 hover:text-slate-100"
             >
-              <ScrollText className="h-4 w-4" />
-              Explore the Manifesto
+              <Network className="h-4 w-4" />
+              Explore Protocol
             </Button>
           </div>
         </div>
 
-        {/* Right column: decentralized entity mesh with no dashboard or browser frame. */}
+        {/* Right column: an abstract beacon canvas with peer-to-peer signals and no dashboard frame. */}
         <div
           role="group"
-          aria-label="Interactive diagram of a sovereign DID, a local hardware device, an AI agent, and an anonymous service plugin, each linked directly to the next."
+          aria-label="Diagram of three identities broadcasting to each other directly: a human identity with a passkey, a smart appliance running ESP32, and a local AI agent."
           className="relative mx-auto aspect-[5/4] w-full max-w-[560px] overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/40 shadow-2xl shadow-black/60 backdrop-blur-xl"
         >
           {/* Faint dot texture on the canvas surface. */}
           <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(148,163,184,0.14)_1px,transparent_1px)] [background-size:24px_24px]" />
 
-          {/* Links and ambient dots render first, so the entity cards stack above them. */}
+          {/* Base links, animated signal overlays, and ambient dots. They render first, so cards stack above them. */}
           <svg
             viewBox={`0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`}
             className="absolute inset-0 h-full w-full"
@@ -228,16 +217,30 @@ export function Hero() {
             {RESOLVED_LINKS.map((link) => {
               // A link lights up when either of its endpoints is in focus.
               const active = focusId !== null && (focusId === link.fromId || focusId === link.toId)
+              const color = active ? "#fcd34d" : "#34d399"
               return (
-                <path
-                  key={link.key}
-                  d={link.d}
-                  stroke={active ? "#fcd34d" : "#34d399"}
-                  strokeOpacity={active ? 0.9 : 0.5}
-                  strokeWidth={active ? 2.5 : 1.25}
-                  strokeLinecap="round"
-                  className="transition-all duration-300"
-                />
+                <g key={link.key}>
+                  <path
+                    d={link.d}
+                    stroke={color}
+                    strokeOpacity={active ? 0.6 : 0.25}
+                    strokeWidth={active ? 1.5 : 1}
+                    strokeLinecap="round"
+                    className="transition-all duration-300"
+                  />
+                  {/* Dashes travel along the link to show a signal in flight. Reduced-motion users skip this. */}
+                  <path
+                    d={link.d}
+                    stroke={color}
+                    strokeOpacity={active ? 1 : 0.8}
+                    strokeWidth={active ? 2.5 : 2}
+                    strokeLinecap="round"
+                    strokeDasharray="4 12"
+                    className="motion-reduce:hidden"
+                  >
+                    <animate attributeName="stroke-dashoffset" from="16" to="0" dur="1.2s" repeatCount="indefinite" />
+                  </path>
+                </g>
               )
             })}
             {AMBIENT_DOTS.map((dot) => (
@@ -252,7 +255,7 @@ export function Hero() {
             ))}
           </svg>
 
-          {/* Link labels sit on each curve's midpoint, between the two rows of cards. */}
+          {/* Signal labels sit on each curve's midpoint, between the peers. */}
           {RESOLVED_LINKS.map((link) => {
             const active = focusId !== null && (focusId === link.fromId || focusId === link.toId)
             return (
@@ -263,12 +266,12 @@ export function Hero() {
                 }`}
                 style={{ left: `${link.labelX}%`, top: `${link.labelY}%` }}
               >
-                {LINK_LABEL}
+                {SIGNAL_LABEL}
               </span>
             )
           })}
 
-          {/* Interactive entity cards, positioned by their center. */}
+          {/* Interactive identity cards, positioned by their center. */}
           {NODES.map((node) => {
             const Icon = node.icon
             const isActive = focusId === node.id
@@ -295,39 +298,39 @@ export function Hero() {
                 >
                   <div className="flex items-center justify-between gap-2">
                     <Icon className="h-4 w-4 shrink-0 text-emerald-300" />
-                    <span className="truncate font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">
-                      {node.kind}
+                    {/* Broadcast pulse: a ping ring around a solid dot shows the identity is live. */}
+                    <span className="relative flex h-2 w-2 shrink-0">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-300" />
                     </span>
                   </div>
-                  <p className="mt-3 font-mono text-xs leading-snug text-slate-100">
-                    {`[${node.title}]`}
+                  <p className="mt-3 font-mono text-xs leading-snug text-slate-100">{`[${node.title}]`}</p>
+                  <p className="mt-1 hidden font-mono text-[9px] uppercase tracking-[0.16em] text-slate-500 sm:block">
+                    {node.kind}
                   </p>
-                  <p className="mt-1 hidden font-mono text-[10px] text-slate-500 sm:block">
-                    {node.meta}
-                  </p>
+                  <p className="mt-1 hidden font-mono text-[10px] text-slate-500 sm:block">{node.meta}</p>
                 </button>
               </div>
             )
           })}
 
-          {/* Canvas header and monospace status tags. */}
+          {/* Canvas header and live status tags. */}
           <div className="absolute left-4 top-4 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-slate-400">
-            <Network className="h-3.5 w-3.5 text-emerald-300" />
-            Decentralized Entity Mesh
+            <Radio className="h-3.5 w-3.5 text-emerald-300" />
+            Universal Entity Beacon
           </div>
 
           <span className="absolute right-4 top-4 rounded border border-emerald-400/30 bg-emerald-400/5 px-2 py-1 font-mono text-[10px] tracking-wider text-emerald-300">
-            [PROTOCOL: ACTIVE]
+            [BEACON: ACTIVE]
           </span>
 
           <span className="absolute bottom-4 left-4 flex items-center gap-1.5 rounded border border-slate-700 bg-slate-950/70 px-2 py-1 font-mono text-[10px] tracking-wider text-slate-300">
-            <ShieldCheck className="h-3 w-3 text-emerald-300" />
+            <Shield className="h-3 w-3 text-emerald-300" />
             [ZERO SERVERS]
           </span>
 
-          <span className="absolute bottom-4 right-4 flex items-center gap-1.5 rounded border border-slate-700 bg-slate-950/70 px-2 py-1 font-mono text-[10px] tracking-wider text-slate-300">
-            <KeyRound className="h-3 w-3 text-amber-200" />
-            [LOCAL KEYSTORE]
+          <span className="absolute bottom-4 right-4 rounded border border-slate-700 bg-slate-950/70 px-2 py-1 font-mono text-[10px] tracking-wider text-slate-300">
+            [CRYPTOGRAPHIC PROOF]
           </span>
         </div>
       </div>
