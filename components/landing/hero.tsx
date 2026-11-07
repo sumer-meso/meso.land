@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Bot, Cpu, Network, Radio, Shield, UserCheck, type LucideIcon } from "lucide-react"
+import { Bot, Cpu, Network, Radio, Shield, UserCheck, Smartphone, Bike, Store, type LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 // Beacon canvas uses a 500 x 400 viewBox (5:4). Node positions are percentages of the canvas,
@@ -26,10 +26,11 @@ interface BeaconNode {
 }
 
 // Three peers that broadcast to each other directly. There is no hub in the middle.
+// Food delivery scenario: diner, courier, and restaurant terminal connect directly.
 const NODES: BeaconNode[] = [
-  { id: "human", kind: "Identity / Passkey", title: "Human Identity / Passkey", meta: "did:meso:7f3a...c91e", icon: UserCheck, x: 22, y: 30 },
-  { id: "appliance", kind: "Hardware / IoT", title: "Smart Appliance / ESP32", meta: "Signed · offline-first", icon: Cpu, x: 78, y: 30 },
-  { id: "agent", kind: "Entity / AI", title: "Local AI Agent", meta: "Holds its own key", icon: Bot, x: 50, y: 74 },
+  { id: "diner", kind: "Diner Mobile", title: "Diner Mobile / DID Key", meta: "Wallet · sovereign key", icon: Smartphone, x: 22, y: 30 },
+  { id: "courier", kind: "Courier Node", title: "Courier Node / Mobile", meta: "Route · proof of delivery", icon: Bike, x: 78, y: 30 },
+  { id: "restaurant", kind: "Restaurant Terminal", title: "Restaurant Ordering Terminal", meta: "Orders · fulfillment", icon: Store, x: 50, y: 74 },
 ]
 
 // Every signal carries the same peer-to-peer label.
@@ -43,9 +44,9 @@ interface BeaconLink {
 }
 
 const LINKS: BeaconLink[] = [
-  { from: "human", to: "appliance", bend: -40 },
-  { from: "appliance", to: "agent", bend: 0 },
-  { from: "agent", to: "human", bend: 0 },
+  { from: "diner", to: "courier", bend: -40 },
+  { from: "courier", to: "restaurant", bend: 0 },
+  { from: "restaurant", to: "diner", bend: 0 },
 ]
 
 // Decorative nodes that give the canvas an organic, unfinished feel.
@@ -162,18 +163,26 @@ export function Hero() {
             <span className="block">You are not an account.</span>
             {/* Glowing gradient accent. The drop shadow traces the text shape. */}
             <span className="mt-2 block italic bg-linear-to-r from-emerald-200 via-amber-100 to-emerald-300 bg-clip-text text-transparent drop-shadow-[0_0_28px_rgba(52,211,153,0.35)]">
-              You are a sovereign identity.
+              Define your own sovereign identity.
             </span>
           </h1>
 
-          <p className="max-w-xl text-base leading-relaxed text-slate-400 sm:text-lg">
-            Just like an AirTag establishes physical presence without central servers, meso.land gives
-            humans, hardware, and AIs an unforgeable, self-owned cryptographic key to interact across the
-            web and physical world directly.
-          </p>
+          <div className="flex flex-col gap-4 max-w-xl">
+            <p className="text-base leading-relaxed text-slate-400 sm:text-lg">
+              Why do you need to register an account and hand your data to a corporate cloud server just to scan a power bank, unlock a smart device, book a service, or order food? Most of the time, those backend servers shouldn't even exist—they are completely useless burdens imposed by centralized platforms.
+            </p>
+            
+            <p className="text-base leading-relaxed text-slate-400 sm:text-lg">
+              Just like an AirTag broadcasts an unforgeable cryptographic signal without needing a central user account, meso.land gives humans, hardware, and AIs a self-owned key—allowing you to connect and interact peer-to-peer, directly and sovereignly.
+            </p>
+            
+            <p className="text-base leading-relaxed text-slate-400 sm:text-lg">
+              Take food delivery, for instance: diners, local restaurant terminals, and couriers already have all the local computing power and devices needed to complete an order, delivery, and payment entirely on their own terms. They don't need middleman platforms like DoorDash or Meituan to broker the transaction—or to skim profits off the top.
+            </p>
+          </div>
 
           <div className="flex w-full flex-col gap-4 sm:w-auto sm:flex-row">
-            {/* Primary action. Placeholder link to the demo until the broadcast flow exists. */}
+            {/* Primary action: Generate Sovereign ID */}
             <Button
               size="lg"
               nativeButton={false}
@@ -181,10 +190,10 @@ export function Hero() {
               className="h-12 gap-2 rounded-md bg-emerald-400 px-6 text-base font-medium text-slate-950 hover:bg-emerald-300"
             >
               <Radio className="h-4 w-4" />
-              Broadcast Your Identity
+              Generate Sovereign ID
             </Button>
 
-            {/* Secondary action: jumps to the protocol demo or FAQ. */}
+            {/* Secondary action: Explore Protocol */}
             <Button
               size="lg"
               variant="outline"
@@ -201,7 +210,7 @@ export function Hero() {
         {/* Right column: an abstract beacon canvas with peer-to-peer signals and no dashboard frame. */}
         <div
           role="group"
-          aria-label="Diagram of three identities broadcasting to each other directly: a human identity with a passkey, a smart appliance running ESP32, and a local AI agent."
+          aria-label="Food delivery scenario: diner mobile device, courier node, and restaurant ordering terminal collaborate directly peer-to-peer without a platform middleman."
           className="relative mx-auto aspect-[5/4] w-full max-w-[560px] overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/40 shadow-2xl shadow-black/60 backdrop-blur-xl"
         >
           {/* Faint dot texture on the canvas surface. */}
@@ -321,7 +330,7 @@ export function Hero() {
           </div>
 
           <span className="absolute right-4 top-4 rounded border border-emerald-400/30 bg-emerald-400/5 px-2 py-1 font-mono text-[10px] tracking-wider text-emerald-300">
-            [BEACON: ACTIVE]
+            [PEER-TO-PEER]
           </span>
 
           <span className="absolute bottom-4 left-4 flex items-center gap-1.5 rounded border border-slate-700 bg-slate-950/70 px-2 py-1 font-mono text-[10px] tracking-wider text-slate-300">
@@ -329,8 +338,8 @@ export function Hero() {
             [ZERO SERVERS]
           </span>
 
-          <span className="absolute bottom-4 right-4 rounded border border-slate-700 bg-slate-950/70 px-2 py-1 font-mono text-[10px] tracking-wider text-slate-300">
-            [CRYPTOGRAPHIC PROOF]
+          <span className="absolute bottom-4 right-4 rounded border border-amber-400/30 bg-amber-400/5 px-2 py-1 font-mono text-[10px] tracking-wider text-amber-300">
+            [NO PLATFORM COMMISSION]
           </span>
         </div>
       </div>
