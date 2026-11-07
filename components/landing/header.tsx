@@ -4,7 +4,6 @@ import * as React from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -12,20 +11,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu"
 import { Logo } from "@/components/landing/logo"
 
 // Anchor links for the navigation. Each href must match a section id on the page.
-const NAV_LINKS = [
-  { label: "Protocol Demo", href: "#demo" },
-  { label: "FAQ", href: "#faq" },
-]
+const NAV_LINKS: Array<{ label: string; href: string }> = []
 
 export function Header() {
   // Controlled dialog state so the form can close the dialog after submitting.
@@ -85,23 +74,9 @@ export function Header() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
         <Logo />
 
-        {/* Primary navigation: anchor links to page sections. Hidden on small screens. */}
-        <NavigationMenu className="hidden md:flex">
-          <NavigationMenuList>
-            {NAV_LINKS.map((link) => (
-              <NavigationMenuItem key={link.href}>
-                <NavigationMenuLink
-                  href={link.href}
-                  className={`${navigationMenuTriggerStyle()} text-slate-100 hover:text-emerald-300 transition-colors`}
-                >
-                  {link.label}
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-            ))}
-          </NavigationMenuList>
-        </NavigationMenu>
+        {/* Primary navigation: removed for clean, minimal header */}
 
-        {/* Actions: secondary "Contact Us" dialog trigger and primary CTA. */}
+        {/* Actions: Contact Us only */}
         <div className="flex items-center gap-2">
           <Dialog open={contactOpen} onOpenChange={setContactOpen}>
             <DialogTrigger className="rounded-md border border-slate-700 bg-transparent px-4 py-2 text-slate-100 hover:bg-slate-800/60 transition-colors text-sm font-medium">
@@ -181,11 +156,6 @@ export function Header() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-
-          {/* Primary CTA: jumps to the protocol demo section. */}
-          <Button nativeButton={false} render={<a href="#demo" />} className="bg-emerald-400 text-slate-950 hover:bg-emerald-300 font-medium">
-            Broadcast
-          </Button>
         </div>
       </div>
     </header>
