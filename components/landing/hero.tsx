@@ -184,12 +184,12 @@ export function Hero() {
               Broadcast Your Identity
             </Button>
 
-            {/* Secondary action: jumps to the features section. */}
+            {/* Secondary action: jumps to the protocol demo or FAQ. */}
             <Button
               size="lg"
               variant="outline"
               nativeButton={false}
-              render={<Link href="#features" />}
+              render={<Link href="#demo" />}
               className="h-12 gap-2 rounded-md border-slate-700 bg-transparent px-6 text-base font-medium text-slate-100 hover:bg-slate-800/60 hover:text-slate-100"
             >
               <Network className="h-4 w-4" />

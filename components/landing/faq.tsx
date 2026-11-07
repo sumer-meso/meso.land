@@ -14,59 +14,61 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-// Placeholder FAQ entries. Each id must be unique; it is used as the accordion item value.
+// Frequently Asked Questions aligned with sovereign identity protocol narrative.
 const FAQS = [
   {
     id: "what-is-meso-land",
     question: "What is meso.land?",
     answer:
-      "meso.land is a modular workspace for visualizing data, collaborating with your team in real time, and generating AI-assisted insights from a single place.",
+      "meso.land is a protocol that gives humans, hardware, and AIs an unforgeable, self-owned cryptographic key—like an AirTag for your identity. It enables direct peer-to-peer interactions across the web and physical world, without relying on central databases or intermediaries.",
   },
   {
-    id: "is-my-data-secure",
-    question: "Is my data secure?",
+    id: "sovereign-identity",
+    question: "What does 'sovereign identity' mean?",
     answer:
-      "Yes. Data is encrypted at rest and in transit, access is governed by role-based permissions, and every change is recorded in an audit log.",
+      "Sovereign identity means you own and control your cryptographic key. You are not dependent on any service, company, or database to prove who you are. Your identity travels with you, signed and verifiable, wherever you go.",
   },
   {
-    id: "real-time-teamwork",
-    question: "Can my team edit dashboards at the same time?",
+    id: "how-does-it-work",
+    question: "How do peer-to-peer signals work?",
     answer:
-      "Yes. Changes made by teammates appear instantly, with live cursors and comments so everyone can see what others are working on.",
+      "Every identity broadcasts cryptographically signed messages. Other entities—whether human, machine, or AI—receive these signals directly and verify them using the sender's public key. No central hub required.",
   },
   {
-    id: "how-ai-insights-work",
-    question: "How do AI Insights work?",
+    id: "hardware-support",
+    question: "Can hardware like IoT devices use meso.land?",
     answer:
-      "AI Insights analyzes the data you select, flags anomalies and trends, and explains them in plain language. You can ask follow-up questions at any time.",
+      "Yes. Any device that can sign and broadcast cryptographic keys—from smart appliances to ESP32 microcontrollers—can participate as a sovereign identity on the meso protocol.",
   },
   {
-    id: "free-trial",
-    question: "Is there a free trial?",
+    id: "when-available",
+    question: "When will the protocol be available?",
     answer:
-      "A free trial is available so you can explore the core features before choosing a plan. Details are shown when you start the trial.",
+      "The protocol specifications are being finalized, and the interactive playground is coming soon. Early documentation and use cases are available now. Stay tuned for the launch.",
   },
 ]
 
 /** Frequently asked questions in an expandable accordion. */
 export function Faq() {
   return (
-    <section id="faq" className="scroll-mt-20 border-t bg-muted/30 py-20">
+    <section id="faq" className="scroll-mt-20 border-t border-slate-800/80 bg-slate-950 py-20 text-slate-100">
       <div className="mx-auto max-w-3xl px-4 sm:px-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Frequently Asked Questions</CardTitle>
-            <CardDescription>
-              Quick answers to the questions we hear most often.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        <div className="mb-12 text-center">
+          <h2 className="font-serif text-3xl tracking-tight text-slate-100 sm:text-4xl">
+            Frequently Asked Questions
+          </h2>
+          <p className="mt-4 text-slate-400">
+            Quick answers to questions about the sovereign identity protocol.
+          </p>
+        </div>
+        <Card className="border border-slate-800/80 bg-slate-900/60 backdrop-blur-xl">
+          <CardContent className="pt-6">
             {/* Accordion: one item open at a time by default; the first item starts expanded. */}
             <Accordion defaultValue={[FAQS[0].id]}>
               {FAQS.map((faq) => (
-                <AccordionItem key={faq.id} value={faq.id}>
-                  <AccordionTrigger>{faq.question}</AccordionTrigger>
-                  <AccordionContent>{faq.answer}</AccordionContent>
+                <AccordionItem key={faq.id} value={faq.id} className="border-slate-800/80">
+                  <AccordionTrigger className="text-slate-100 hover:text-emerald-300">{faq.question}</AccordionTrigger>
+                  <AccordionContent className="text-slate-400">{faq.answer}</AccordionContent>
                 </AccordionItem>
               ))}
             </Accordion>
